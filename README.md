@@ -1,5 +1,8 @@
 # Orbuculum
 
+- Pronunciation
+    - or-BOO-koo-lum
+
 ## Introduction
 
 This is a simple Python project that uses LLM to answer questions based on the given PDF files.
