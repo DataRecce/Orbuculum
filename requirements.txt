@@ -1,4 +1,5 @@
 pypdf
+pydantic
 langchain
 langchain_community
 langchain_chroma
@@ -7,3 +8,4 @@ pytest
 boto3
 click
 rich
+requests

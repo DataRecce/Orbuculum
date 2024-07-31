@@ -1,10 +1,10 @@
 from langchain_chroma import Chroma
-from langchain_community.llms.ollama import Ollama
 from langchain_core.prompts import ChatPromptTemplate
 from rich.console import Console
 
 from orbuculum.database import CHROMA_PATH
 from orbuculum.embedding import get_embedding_function
+from orbuculum.llm.ffm import FormosaFoundationModel
 
 console = Console()
 
@@ -33,7 +33,16 @@ def query_orbuculum(query_text: str) -> str:
     prompt = prompt_template.format(context=context_text, question=query_text)
 
     # Asking LLM
-    model = Ollama(model="mistral")
-    response_answer = model.invoke(prompt)
+    # model = Ollama(model="mistral")
+    model = FormosaFoundationModel(model='llama3-ffm-70b-chat')
+    kwargs = {
+        'messages': [
+            {'role': 'user', 'content': prompt}
+        ]
+    }
+    # response_answer = model.invoke(prompt, **kwargs)
+    response_answer = ""
+    for token in model.stream("", kwargs=kwargs):
+        response_answer += token
 
     return response_answer

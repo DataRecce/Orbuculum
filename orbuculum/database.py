@@ -56,7 +56,6 @@ def add_to_chroma(chunks: list[Document]):
         console.print(f'Adding {len(new_chunks)} new documents.')
         new_chunk_ids = [chunk.metadata['id'] for chunk in new_chunks]
         db.add_documents(new_chunks, ids=new_chunk_ids)
-        db.persist()
 
 
 def calculate_chunk_ids(chunks: list[Document]):
