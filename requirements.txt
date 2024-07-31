@@ -1,0 +1,9 @@
+pypdf
+langchain
+langchain_community
+langchain_chroma
+chromadb # Vector storage
+pytest
+boto3
+click
+rich
