@@ -1,10 +1,13 @@
+import json
 import os
 import shutil
+from typing import Optional
 
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pydantic import BaseModel
 from rich.console import Console
 
 from orbuculum.embedding import get_embedding_function
@@ -56,7 +59,6 @@ def add_to_chroma(chunks: list[Document]):
         console.print(f'Adding {len(new_chunks)} new documents.')
         new_chunk_ids = [chunk.metadata['id'] for chunk in new_chunks]
         db.add_documents(new_chunks, ids=new_chunk_ids)
-        db.persist()
 
 
 def calculate_chunk_ids(chunks: list[Document]):
@@ -88,3 +90,36 @@ def clear_database():
     if os.path.exists(CHROMA_PATH):
         shutil.rmtree(CHROMA_PATH)
         console.print('Database cleared.')
+
+
+class Metadata(BaseModel):
+    metadata_path: str = os.path.join(CHROMA_PATH, '.metadata.json')
+    embedding_model: str = ''
+    api_key: Optional[str] = None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.load()
+
+    def load(self):
+        if not os.path.exists(self.metadata_path):
+            self.embedding_model = ''
+            self.api_key = None
+            return
+        with open(self.metadata_path, 'r') as f:
+            metadata = json.load(f)
+            self.embedding_model = metadata.get('embedding_model')
+            self.api_key = metadata.get('api_key')
+
+    def save(self):
+        metadata = {
+            'embedding_model': self.embedding_model,
+        }
+        if self.api_key:
+            metadata['api_key'] = self.api_key
+
+        with open(self.metadata_path, 'w') as f:
+            json.dump(metadata, f)
+
+
+orbuculum_metadata = Metadata()
