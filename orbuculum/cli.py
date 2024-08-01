@@ -40,7 +40,7 @@ def version():
 @cli.command(help='Ask a question based on the provided PDF documents.')
 @click.argument('query_text', required=False)
 @click.option('--model', help='The model to use for answering the question.',
-              type=click.Choice(['llama3', 'llama3-ffm', 'mistral']),
+              type=click.Choice(['llama3.1:8b', 'llama3-ffm', 'mistral']),
               default='mistral', show_default=True)
 @click.pass_context
 def ask(ctx, query_text: str = None, **kwargs):
