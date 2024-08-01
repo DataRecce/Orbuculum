@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 class FFMEmbeddings(BaseModel, Embeddings):
     base_url: str = 'https://api-ams.twcc.ai/api'
-    api_key: str = os.environ.get('AFS_API_KEY')
+    api_key: str = ''
     model: str = ''
 
     def get_embeddings(self, payload):
@@ -304,3 +304,15 @@ class FormosaFoundationModel(BaseLLM, _FormosaFoundationCommon):
         )
         for chunk in result:
             yield chunk
+
+    def invoke(self, prompt: str, **kwargs: Any) -> str:
+        response_answer = ''
+        kwargs = {
+            'messages': [
+                {'role': 'user', 'content': prompt}
+            ]
+        }
+        for token in self.stream("", kwargs=kwargs):
+            response_answer += token
+
+        return response_answer

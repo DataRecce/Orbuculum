@@ -1,4 +1,5 @@
 from langchain_chroma import Chroma
+from langchain_community.llms.ollama import Ollama
 from langchain_core.prompts import ChatPromptTemplate
 from rich.console import Console
 
@@ -19,7 +20,7 @@ Answer the question based on the above context: {question}
 """
 
 
-def query_orbuculum(query_text: str) -> str:
+def query_orbuculum(query_text: str, model: str = None) -> str:
     # Prepare DB
     embedding_function = get_embedding_function()
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
@@ -33,16 +34,14 @@ def query_orbuculum(query_text: str) -> str:
     prompt = prompt_template.format(context=context_text, question=query_text)
 
     # Asking LLM
-    # model = Ollama(model="mistral")
-    model = FormosaFoundationModel(model='llama3-ffm-70b-chat')
-    kwargs = {
-        'messages': [
-            {'role': 'user', 'content': prompt}
-        ]
-    }
-    # response_answer = model.invoke(prompt, **kwargs)
-    response_answer = ""
-    for token in model.stream("", kwargs=kwargs):
-        response_answer += token
+    if model == 'llama3-ffm':
+        from orbuculum.database import orbuculum_metadata
+        api_key = orbuculum_metadata.api_key
+        if api_key is None:
+            raise ValueError('API Key is required for llama3-ffm model.')
+        model = FormosaFoundationModel(model='llama3-ffm-70b-chat', ffm_api_key=api_key)
+    else:
+        model = Ollama(model=model)
+    response_answer = model.invoke(prompt)
 
     return response_answer
