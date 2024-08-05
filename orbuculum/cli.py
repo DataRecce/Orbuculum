@@ -5,6 +5,8 @@ from rich.console import Console
 from rich.prompt import Prompt
 
 from orbuculum.database import load_documents, split_documents, add_to_chroma, clear_database, orbuculum_metadata
+from orbuculum.embedding import model_map as embedding_model_map
+from orbuculum.llm import model_map as llm_model_map
 from orbuculum.rag import query_orbuculum
 
 console = Console()
@@ -40,7 +42,7 @@ def version():
 @cli.command(help='Ask a question based on the provided PDF documents.')
 @click.argument('query_text', required=False)
 @click.option('--model', help='The model to use for answering the question.',
-              type=click.Choice(['llama3.1:8b', 'llama3-ffm', 'mistral']),
+              type=click.Choice(list(llm_model_map.keys())),
               default='mistral', show_default=True)
 @click.pass_context
 def ask(ctx, query_text: str = None, **kwargs):
@@ -56,8 +58,8 @@ def ask(ctx, query_text: str = None, **kwargs):
 @cli.command(help='Recharge the orbuculum with new PDF documents.')
 @click.option('--reset', is_flag=True, help='Reset the orbuculum.')
 @click.option('--embedding', help='The embedding model to use.',
-              type=click.Choice(['nomic-embed-text', 'ffm']),
-              default='nomic-embed-text', show_default=True)
+              type=click.Choice(list(embedding_model_map.keys())),
+              default='nomic', show_default=True)
 @click.pass_context
 def recharge(ctx, **kwargs):
     if kwargs.get('reset'):
@@ -93,6 +95,14 @@ def recharge(ctx, **kwargs):
 
     add_to_chroma(chunks)
     orbuculum_metadata.save()
+
+
+@cli.command(help='Launch the Orbuculum Server.')
+def server():
+    # execute streamlit run orbuculum/app.py
+    orbuculum_dir = os.path.dirname(os.path.abspath(__file__))
+    app_file = os.path.join(orbuculum_dir, 'app.py')
+    return os.system(f'streamlit run {app_file}')
 
 
 if __name__ == '__main__':
