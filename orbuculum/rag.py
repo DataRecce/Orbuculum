@@ -5,6 +5,7 @@ from rich.console import Console
 
 from orbuculum.database import CHROMA_PATH
 from orbuculum.embedding import get_embedding_function
+from orbuculum.llm import model_map as llm_model_map
 from orbuculum.llm.ffm import FormosaFoundationModel
 
 console = Console()
@@ -34,14 +35,15 @@ def query_orbuculum(query_text: str, model: str = None) -> str:
     prompt = prompt_template.format(context=context_text, question=query_text)
 
     # Asking LLM
+    model_name = llm_model_map.get(model, model)
     if model == 'llama3-ffm':
         from orbuculum.database import orbuculum_metadata
         api_key = orbuculum_metadata.api_key
         if api_key is None:
             raise ValueError('API Key is required for llama3-ffm model.')
-        model = FormosaFoundationModel(model='llama3-ffm-70b-chat', ffm_api_key=api_key)
+        llm = FormosaFoundationModel(model=model_name, ffm_api_key=api_key)
     else:
-        model = Ollama(model=model)
-    response_answer = model.invoke(prompt)
+        llm = Ollama(model=model_name)
+    response_answer = llm.invoke(prompt)
 
     return response_answer

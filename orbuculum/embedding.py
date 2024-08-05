@@ -2,6 +2,11 @@ from langchain_community.embeddings import OllamaEmbeddings
 
 from orbuculum.llm.ffm import FFMEmbeddings
 
+model_map = {
+    'nomic': 'nomic-embed-text',
+    'ffm': 'ffm-embedding',
+}
+
 
 def get_embedding_function() -> callable:
     # embeddings = BedrockEmbeddings(
@@ -14,4 +19,5 @@ def get_embedding_function() -> callable:
         api_key = orbuculum_metadata.api_key
         return FFMEmbeddings(model='ffm-embedding', api_key=api_key)
     else:
-        return OllamaEmbeddings(model=model)
+        model_name = model_map.get(model, model)
+        return OllamaEmbeddings(model=model_name)
